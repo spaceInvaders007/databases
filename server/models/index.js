@@ -1,30 +1,51 @@
 var db = require('../db');
-//requires controller - var controllers = require('../controllers');
 
 module.exports = {
   messages: {
-    get: function (err) {
+    get: function (callback) {
 
-
-      if (err) throw err;
-      var sql = 'SELECT * FROM messages';
-      db.query(sql, function(err, result) {
-        if (err) throw err;
-        console.log(result)
+      var sql = 'SELECT messages.id, messages.text, messages.roomname, users.username from messages left outer join users on (messages.userId = users.id) order by messages.id desc ';
+      db.query(sql, function(err, results) {
+        if (err){
+          console.log(err)
+        }
+        callback(results)
       } )
-    }, // a function which produces all the messages
-    post: function () {
+    },
 
-      var sql = "INSERT INTO messages (username, text) VALUES ('Michelle', 'Blue Village 1')";
-    } // a function which can be used to insert a message into the database
+    post: function (params, callback) {
+      var sql = "INSERT INTO messages(text, userId, roomname) VALUES (?,(select id from users where username = ? limit 1),?)";
+      db.query(sql, params, function (err, results) {
+        if (err) {
+         // console.log(err)
+        } else {
+          callback(results)
+        }
+      });
+
+        }
   },
 
   users: {
     // Ditto as above.
-    get: function () {
+    get: function (callback) {
+      var sql = 'SELECT * FROM users';
+      db.query(sql, function(err, results) {
+        if (err){
+          console.log(err)
+        }
+        callback(result)
+      } )
 
     },
-    post: function () {}
+    post: function (params, callback) {
+      var sql = 'INSERT INTO users(username) values (?)';
+      db.query(sql, params, function(err, results) {
+        if (err){
+          console.log(err)
+        }
+        callback(results)
+      } )
+    }
   }
-};
-
+}
